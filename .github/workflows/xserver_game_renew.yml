@@ -1,4 +1,4 @@
-name: XServer-Game-Renew
+name: XSMA-Renew
 on:
   workflow_dispatch:
   schedule:
@@ -40,7 +40,7 @@ jobs:
 
       - name: 🔧 执行续期
         env:
-          XSERVER_GAME_ACCOUNT: ${{ secrets.XSERVER_GAME_ACCOUNT }}
+          XSERVER_GAME_ACCOUNT: ${{ secrets.XSMA_ACCOUNT }}
           GOST_PROXY: ${{ secrets.GOST_PROXY }}
           TG_BOT: ${{ secrets.TG_BOT }}
         run: python3 xserver_game_renew.py
