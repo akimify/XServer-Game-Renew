@@ -2,7 +2,7 @@ name: XSMB-Renew
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "0 16 * * *"
 
 jobs:
   renew:
