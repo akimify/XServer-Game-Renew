@@ -49,6 +49,7 @@ jobs:
           XSERVER_GAME_ACCOUNT: ${{ secrets.XSMA_ACCOUNT }}
           GOST_PROXY: ${{ secrets.GOST_PROXY }}
           TG_BOT: ${{ secrets.TG_BOT }}
+          YML_TARGET_FILE: .github/workflows/xsma_renew.yml
         run: python3 xserver_game_renew.py
         
       - name: 📤 提交更新后的 cron
