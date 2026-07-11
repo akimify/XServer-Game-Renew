@@ -50,7 +50,7 @@ jobs:
       - name: 🧽 清理进程和临时文件
         if: always()
         run: |
-          pkill -f gost || true
+          pkill -f "gost -L" || true
           pkill -f python || true
           rm -f gost gost_*.tar.gz gost.log xserver_game_renew.py
 
