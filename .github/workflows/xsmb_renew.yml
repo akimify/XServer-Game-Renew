@@ -42,7 +42,7 @@ jobs:
       - name: 🔧 执行续期
         env:
           XSERVER_GAME_ACCOUNT: ${{ secrets.XSMB_ACCOUNT }}
-          GOST_PROXY: ${{ secrets.GOST_PROXY }}
+          GOST_PROXY: ${{ secrets.XSMB_PROXY }}
           TG_BOT: ${{ secrets.TG_BOT }}
           CRON_JOB: ${{ secrets.XSMB_CRON }}
         run: python3 xserver_game_renew.py
