@@ -37,9 +37,61 @@ jobs:
           nohup ./gost -L http://:8080 -F "$GOST_PROXY" > gost.log 2>&1 &
           sleep 3
           echo "✅ GOST 已启动，测试连通性..."
-          curl -s -x http://127.0.0.1:8080 https://api.ipify.org | sed -E 's/\.[0-9]+\.[0-9]+$/.**.**/' && echo
+          if curl -s -x http://127.0.0.1:8080 https://api.ipify.org | sed -E 's/\.[0-9]+\.[0-9]+$/.**.**/' && echo; then
+            echo "GOST_OK=true" >> $GITHUB_ENV
+          else
+            echo "⚠️ GOST 连通性测试失败"
+            echo "GOST_OK=false" >> $GITHUB_ENV
+          fi
+
+      - name: ⚠️ GOST 失败写回 Cron 1分钟后重试
+        if: ${{ env.GOST_OK == 'false' }}
+        env:
+          CRON_JOB: ${{ secrets.XSMB_CRON }}
+          TG_BOT: ${{ secrets.TG_BOT }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, urllib.request, datetime
+          from datetime import timedelta
+
+          cron_job = os.environ.get("CRON_JOB", "")
+          if not cron_job or "," not in cron_job:
+              print("⚠️ 未配置 CRON_JOB，跳过")
+              exit(0)
+
+          api_key, job_id = [x.strip() for x in cron_job.split(",", 1)]
+          next_run = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + timedelta(hours=8, minutes=1)
+
+          data = {"job": {"schedule": {
+              "timezone": "Asia/Shanghai", "expiresAt": 0,
+              "hours": [next_run.hour], "minutes": [next_run.minute],
+              "mdays": [next_run.day], "months": [next_run.month], "wdays": [-1],
+          }}}
+          payload = json.dumps(data).encode()
+          req = urllib.request.Request(
+              f"https://api.cron-job.org/jobs/{job_id}",
+              data=payload,
+              headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+              method="PATCH"
+          )
+          urllib.request.urlopen(req, timeout=15)
+          print(f"🔁 GOST失败，已写回Cron：{next_run.month:02d}月{next_run.day:02d}日 {next_run.hour:02d}:{next_run.minute:02d} 重试")
+
+          tg_bot = os.environ.get("TG_BOT", "")
+          if tg_bot and "," in tg_bot:
+              import urllib.parse
+              chat_id, token = [x.strip() for x in tg_bot.split(",", 1)]
+              msg = f"⚠️ GOST代理启动失败，已安排1分钟后重试"
+              urllib.request.urlopen(
+                  f"https://api.telegram.org/bot{token}/sendMessage",
+                  data=urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode(),
+                  timeout=10
+              )
+              print("📨 TG 推送成功")
+          EOF
 
       - name: 🔧 执行续期
+        if: ${{ env.GOST_OK != 'false' }}
         env:
           XSERVER_GAME_ACCOUNT: ${{ secrets.XSMB_ACCOUNT }}
           GOST_PROXY: ${{ secrets.XSMB_PROXY }}
