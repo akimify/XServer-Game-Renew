@@ -45,7 +45,7 @@ jobs:
           fi
 
       - name: ⚠️ GOST 失败写回 Cron 1分钟后重试
-        if: ${{ env.GOST_OK != 'false' }}
+        if: ${{ env.GOST_OK == 'false' }}
         env:
           CRON_JOB: ${{ secrets.XSMA_CRON }}
           TG_BOT: ${{ secrets.TG_BOT }}
@@ -92,14 +92,6 @@ jobs:
 
       - name: 🔧 执行续期
         if: ${{ env.GOST_OK != 'false' }}
-        env:
-          XSERVER_GAME_ACCOUNT: ${{ secrets.XSMA_ACCOUNT }}
-          GOST_PROXY: ${{ secrets.XSMA_PROXY }}
-          TG_BOT: ${{ secrets.TG_BOT }}
-          CRON_JOB: ${{ secrets.XSMA_CRON }}
-        run: python3 xserver_game_renew.py
-      
-      - name: 🔧 执行续期
         env:
           XSERVER_GAME_ACCOUNT: ${{ secrets.XSMA_ACCOUNT }}
           GOST_PROXY: ${{ secrets.XSMA_PROXY }}
