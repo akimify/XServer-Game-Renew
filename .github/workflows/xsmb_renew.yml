@@ -44,7 +44,7 @@ jobs:
             echo "GOST_OK=false" >> $GITHUB_ENV
           fi
 
-      - name: ⚠️ GOST 失败写回 Cron 1分钟后重试
+      - name: ⚠️ GOST 失败写回 Cron 5分钟后重试
         if: ${{ env.GOST_OK == 'false' }}
         env:
           CRON_JOB: ${{ secrets.XSMB_CRON }}
@@ -60,7 +60,7 @@ jobs:
               exit(0)
 
           api_key, job_id = [x.strip() for x in cron_job.split(",", 1)]
-          next_run = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + timedelta(hours=8, minutes=1)
+          next_run = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + timedelta(hours=8, minutes=5)
 
           data = {"job": {"schedule": {
               "timezone": "Asia/Shanghai", "expiresAt": 0,
@@ -81,7 +81,7 @@ jobs:
           if tg_bot and "," in tg_bot:
               import urllib.parse
               chat_id, token = [x.strip() for x in tg_bot.split(",", 1)]
-              msg = f"⚠️ GOST代理启动失败，已安排1分钟后重试"
+              msg = f"⚠️ GOST代理启动失败，已安排5分钟后重试"
               urllib.request.urlopen(
                   f"https://api.telegram.org/bot{token}/sendMessage",
                   data=urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode(),
